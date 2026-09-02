@@ -87,7 +87,7 @@ export function validateSimulationConfig(config: SimulationConfig): ValidationRe
       );
     }
 
-    if (initialExposedSum === 0 && initialInfectedSum === 0 && !config.mutation.enabled) {
+    if (initialExposedSum === 0 && initialInfectedSum === 0 && !config.mutation?.enabled) {
       warnings.push(
         'Zero initial infected and exposed individuals (I₀=0, E₀=0). No transmission will occur unless a mutation or seed emerges.'
       );

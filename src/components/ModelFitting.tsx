@@ -43,11 +43,13 @@ export const ModelFitting: React.FC<ModelFittingProps> = ({
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [estimationResult, setEstimationResult] = useState<ParameterEstimationResult | null>(null);
   const [appliedNotice, setAppliedNotice] = useState(false);
+  const [errorNotice, setErrorNotice] = useState<string | null>(null);
 
   // Run Nelder-Mead simplex estimation
   const handleRunEstimation = () => {
+    setErrorNotice(null);
     if (records.length < 5) {
-      alert('Please upload or load a dataset with at least 5 empirical observations in the Data Center first.');
+      setErrorNotice('Please upload or load a dataset with at least 5 empirical observations in the Data Center first.');
       return;
     }
 
@@ -63,7 +65,7 @@ export const ModelFitting: React.FC<ModelFittingProps> = ({
         const result = estimateParametersFromData(obs, activeConfig.population);
         setEstimationResult(result);
       } catch (err: any) {
-        alert(`Parameter estimation error: ${err.message}`);
+        setErrorNotice(`Parameter estimation error: ${err.message || 'Optimization failed'}`);
       } finally {
         setIsOptimizing(false);
       }
@@ -128,6 +130,21 @@ export const ModelFitting: React.FC<ModelFittingProps> = ({
         </div>
       ) : (
         <div className="space-y-6">
+          {errorNotice && (
+            <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-xl text-xs text-rose-900 dark:text-rose-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{errorNotice}</span>
+              </div>
+              <button
+                onClick={() => setErrorNotice(null)}
+                className="text-rose-700 dark:text-rose-400 hover:underline text-[11px] font-semibold cursor-pointer"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
           {appliedNotice && (
             <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl text-xs text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />

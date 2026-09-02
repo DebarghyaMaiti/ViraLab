@@ -78,7 +78,7 @@ export const AiAssistantModal: React.FC<AiAssistantModalProps> = ({
               mortality: s.mortalityRate,
               escape: s.immuneEscape,
             })),
-            activeInterventions: simulationResults.config.interventions
+            activeInterventions: (simulationResults.config.interventions || [])
               .filter((i) => i.enabled)
               .map((i) => `${i.name} (Day ${i.startDay}-${i.endDay})`),
             vaccinationEnabled: simulationResults.config.vaccination?.enabled,

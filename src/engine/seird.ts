@@ -131,8 +131,8 @@ export function computeDerivatives(
     const newExposedFromS = forceOfInfection * S;
 
     // Force of infection on Vaccinated (scaled by vaccine efficacy & immune escape)
-    let vaxEfficacyAgainstStrain = vax.enabled ? vax.efficacy : 0;
-    if (vax.variantEfficacyMap && vax.variantEfficacyMap[strain.id] !== undefined) {
+    let vaxEfficacyAgainstStrain = vax?.enabled ? vax.efficacy : 0;
+    if (vax?.variantEfficacyMap && vax.variantEfficacyMap[strain.id] !== undefined) {
       vaxEfficacyAgainstStrain *= vax.variantEfficacyMap[strain.id];
     }
     // Immune escape reduces efficacy: eff_net = eff * (1 - escape)

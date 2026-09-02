@@ -232,16 +232,19 @@ export function runDeterministicSimulation(config: SimulationConfig): Simulation
     const gamma = 1 / Math.max(0.1, strain.infectiousPeriod);
     const mu = (strain.mortalityRate * gamma) / Math.max(0.001, 1 - strain.mortalityRate);
     const R0 = (strain.beta * strain.relativeFitness) / (gamma + mu);
-    const lastRe = lastPoint?.strainMetrics[strain.id]?.Re || 0;
+    const sLast = lastPoint?.strainMetrics[strain.id];
+    const lastRe = sLast?.Re || 0;
+    const sTotalInf = sLast ? (sLast.R || 0) + (sLast.D || 0) + (sLast.I || 0) : 0;
+    const sDeaths = sLast?.D || 0;
 
     return {
       strainId: strain.id,
       name: strain.name,
       color: strain.color,
-      totalInfected: Math.round(lastPoint?.strainMetrics[strain.id]?.R + lastPoint?.strainMetrics[strain.id]?.D + lastPoint?.strainMetrics[strain.id]?.I || 0),
+      totalInfected: Math.round(sTotalInf),
       peakInfected: Math.round(strainPeak),
       peakDay: strainPeakDay,
-      totalDeaths: Math.round(lastPoint?.strainMetrics[strain.id]?.D || 0),
+      totalDeaths: Math.round(sDeaths),
       timeToDominance,
       R0: Number(R0.toFixed(2)),
       currentRe: Number(lastRe.toFixed(2)),

@@ -32,7 +32,7 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts';
-import { SimulationResults, SimulationTimePoint } from '../types/simulation';
+import { SimulationResults, SimulationTimePoint, StrainTimeMetric } from '../types/simulation';
 import { DisclaimerBanner } from './DisclaimerBanner';
 
 interface DashboardProps {
@@ -493,8 +493,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ results, onNavigateToTab, 
                 <AreaChart
                   data={timeSeries.map((pt) => {
                     const row: any = { day: pt.day };
-                    Object.entries(pt.strainMetrics).forEach(([strainId, metric]) => {
-                      row[strainId] = (metric as any).activeShare;
+                    Object.entries(pt.strainMetrics).forEach(([strainId, metric]: [string, StrainTimeMetric]) => {
+                      row[strainId] = metric.activeShare;
                     });
                     return row;
                   })}

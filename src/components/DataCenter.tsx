@@ -51,11 +51,13 @@ export const DataCenter: React.FC<DataCenterProps> = ({
   const [cleanedRecords, setCleanedRecords] = useState<DatasetRecord[]>([]);
   const [cleanOps, setCleanOps] = useState<string[]>([]);
   const [page, setPage] = useState(1);
+  const [parseError, setParseError] = useState<string | null>(null);
   const pageSize = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Process text into table, detect columns and run quality audit
   const processRawData = (text: string, sourceName: string) => {
+    setParseError(null);
     try {
       let table;
       if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
@@ -95,7 +97,7 @@ export const DataCenter: React.FC<DataCenterProps> = ({
         quality: report,
       });
     } catch (err: any) {
-      alert(`Data parsing error: ${err.message}`);
+      setParseError(`Data parsing error: ${err.message || 'Invalid dataset format'}`);
     }
   };
 
@@ -176,6 +178,21 @@ export const DataCenter: React.FC<DataCenterProps> = ({
           </button>
         )}
       </div>
+
+      {parseError && (
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded-xl text-xs text-rose-900 dark:text-rose-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{parseError}</span>
+          </div>
+          <button
+            onClick={() => setParseError(null)}
+            className="text-rose-700 dark:text-rose-400 hover:underline text-[11px] font-semibold cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Upload Zone & Presets */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
