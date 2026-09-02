@@ -1,0 +1,6 @@
+{
+  "name": "ViraLab",
+  "description": "Interactive viral transmission, multi-strain SEIRD dynamics, variant evolution, and outbreak simulation platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
