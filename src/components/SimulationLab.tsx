@@ -10,9 +10,10 @@ import {
   Layers,
   Sparkles,
 } from 'lucide-react';
-import { SimulationConfig } from '../types/simulation';
+import { SimulationConfig, SimulationEventLogEntry } from '../types/simulation';
 import { scenarioPresets } from '../data/presets';
 import { validateSimulationConfig } from '../engine/validation';
+import { EventLoggingPanel } from './EventLoggingPanel';
 
 interface SimulationLabProps {
   config: SimulationConfig;
@@ -21,6 +22,13 @@ interface SimulationLabProps {
   isSimulating: boolean;
   onLoadPreset: (presetId: string) => void;
   isLearningMode: boolean;
+  eventLogs?: SimulationEventLogEntry[];
+  selectedLogId?: string | null;
+  onSelectLog?: (logId: string) => void;
+  onReviewInFitting?: (logId: string) => void;
+  onRestoreLogConfig?: (config: SimulationConfig) => void;
+  onDeleteLog?: (logId: string) => void;
+  onClearLogs?: () => void;
 }
 
 export const SimulationLab: React.FC<SimulationLabProps> = ({
@@ -30,6 +38,13 @@ export const SimulationLab: React.FC<SimulationLabProps> = ({
   isSimulating,
   onLoadPreset,
   isLearningMode,
+  eventLogs = [],
+  selectedLogId = null,
+  onSelectLog = () => {},
+  onReviewInFitting = () => {},
+  onRestoreLogConfig = () => {},
+  onDeleteLog = () => {},
+  onClearLogs = () => {},
 }) => {
   const validation = validateSimulationConfig(config);
 
@@ -333,6 +348,17 @@ export const SimulationLab: React.FC<SimulationLabProps> = ({
           </p>
         )}
       </section>
+
+      {/* Event Logging System & State Transitions */}
+      <EventLoggingPanel
+        eventLogs={eventLogs}
+        selectedLogId={selectedLogId}
+        onSelectLog={onSelectLog}
+        onReviewInFitting={onReviewInFitting}
+        onRestoreConfig={onRestoreLogConfig}
+        onDeleteLog={onDeleteLog}
+        onClearLogs={onClearLogs}
+      />
     </div>
   );
 };

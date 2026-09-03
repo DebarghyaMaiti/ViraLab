@@ -12,18 +12,31 @@ import { WhatIfLab } from './components/WhatIfLab';
 import { EducationalMode } from './components/EducationalMode';
 import { AiAssistantModal } from './components/AiAssistantModal';
 import { ExportReportModal } from './components/ExportReportModal';
-import { SimulationConfig, SimulationResults, DatasetRecord } from './types/simulation';
+import { SimulationConfig, SimulationResults, DatasetRecord, SimulationEventLogEntry } from './types/simulation';
 import { defaultSimulationConfig, scenarioPresets, syntheticHistoricalOutbreakCsv } from './data/presets';
 import { parseDelimitedText } from './data/parser';
 import { detectColumnMappings } from './data/columnDetector';
 import { normalizeDatasetRows } from './data/dataQuality';
 import { runDeterministicSimulation } from './engine/rk45';
 import { runStochasticSimulation } from './engine/stochastic';
+import { createEventLogEntry } from './engine/eventLogger';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [isLearningMode, setIsLearningMode] = useState<boolean>(false);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('viralab_theme');
+        if (saved === 'dark') return true;
+        if (saved === 'light') return false;
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
@@ -32,16 +45,32 @@ export default function App() {
   const [config, setConfig] = useState<SimulationConfig>(defaultSimulationConfig);
   const [results, setResults] = useState<SimulationResults | null>(null);
 
+  // Simulation Event Logs & State Transitions
+  const [eventLogs, setEventLogs] = useState<SimulationEventLogEntry[]>([]);
+  const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
+
   // Ingested Dataset State
   const [records, setRecords] = useState<DatasetRecord[]>([]);
   const [datasetMetadata, setDatasetMetadata] = useState<any>(null);
 
-  // Initialize theme
+  // Synchronize theme across DOM elements and localStorage
   useEffect(() => {
+    const root = document.documentElement;
+    const body = document.body;
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
+      if (body) body.classList.add('dark');
+      root.style.colorScheme = 'dark';
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
+      if (body) body.classList.remove('dark');
+      root.style.colorScheme = 'light';
+    }
+
+    try {
+      localStorage.setItem('viralab_theme', isDarkMode ? 'dark' : 'light');
+    } catch {
+      // ignore storage access errors
     }
   }, [isDarkMode]);
 
@@ -50,6 +79,7 @@ export default function App() {
     async (cfgToRun: SimulationConfig = config) => {
       setIsSimulating(true);
       try {
+        let simData: SimulationResults;
         const response = await fetch('/api/simulation/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -57,22 +87,30 @@ export default function App() {
         });
 
         if (response.ok) {
-          const simData: SimulationResults = await response.json();
-          setResults(simData);
+          simData = await response.json();
         } else {
           // Direct fallback to in-memory engine if API gateway is unreached
-          const fallback =
+          simData =
             cfgToRun.mode === 'stochastic'
               ? runStochasticSimulation(cfgToRun)
               : runDeterministicSimulation(cfgToRun);
-          setResults(fallback);
         }
+        setResults(simData);
+
+        // Record timestamped simulation parameters and significant state transitions in the event logger
+        const newLogEntry = createEventLogEntry(cfgToRun, simData);
+        setEventLogs((prev) => [newLogEntry, ...prev.slice(0, 49)]);
+        setSelectedLogId(newLogEntry.id);
       } catch {
         const fallback =
           cfgToRun.mode === 'stochastic'
             ? runStochasticSimulation(cfgToRun)
             : runDeterministicSimulation(cfgToRun);
         setResults(fallback);
+
+        const newLogEntry = createEventLogEntry(cfgToRun, fallback);
+        setEventLogs((prev) => [newLogEntry, ...prev.slice(0, 49)]);
+        setSelectedLogId(newLogEntry.id);
       } finally {
         setIsSimulating(false);
       }
@@ -160,6 +198,27 @@ export default function App() {
             isSimulating={isSimulating}
             onLoadPreset={handleLoadPreset}
             isLearningMode={isLearningMode}
+            eventLogs={eventLogs}
+            selectedLogId={selectedLogId}
+            onSelectLog={(id) => setSelectedLogId(id)}
+            onReviewInFitting={(id) => {
+              setSelectedLogId(id);
+              setActiveTab('modelfitting');
+            }}
+            onRestoreLogConfig={(cfg) => {
+              setConfig(cfg);
+              executeSimulation(cfg);
+            }}
+            onDeleteLog={(id) => {
+              setEventLogs((prev) => prev.filter((l) => l.id !== id));
+              if (selectedLogId === id) {
+                setSelectedLogId(null);
+              }
+            }}
+            onClearLogs={() => {
+              setEventLogs([]);
+              setSelectedLogId(null);
+            }}
           />
         )}
 
@@ -206,6 +265,9 @@ export default function App() {
               setActiveTab('dashboard');
             }}
             isLearningMode={isLearningMode}
+            eventLogs={eventLogs}
+            selectedLogId={selectedLogId}
+            onSelectLogId={(id) => setSelectedLogId(id)}
           />
         )}
 

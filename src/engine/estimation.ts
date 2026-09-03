@@ -62,7 +62,13 @@ export function calculateFitMetrics(observed: number[], predicted: number[]) {
  */
 export function estimateParametersFromData(
   observed: ObservedDataPoint[],
-  population: number = 1000000
+  population: number = 1000000,
+  initialGuess?: {
+    beta?: number;
+    infectiousPeriod?: number;
+    incubationPeriod?: number;
+    mortalityRate?: number;
+  }
 ): ParameterEstimationResult {
   if (observed.length < 5) {
     throw new Error('At least 5 empirical observations are required for parameter estimation.');
@@ -147,6 +153,15 @@ export function estimateParametersFromData(
     [0.95, 5.0, 3.0, 0.01],
     [0.35, 8.0, 5.0, 0.025],
   ];
+
+  if (initialGuess) {
+    candidateSeeds.unshift([
+      initialGuess.beta || 0.45,
+      initialGuess.infectiousPeriod || 6.0,
+      initialGuess.incubationPeriod || 4.0,
+      initialGuess.mortalityRate || 0.015,
+    ]);
+  }
 
   for (const seed of candidateSeeds) {
     const score = objective(seed);

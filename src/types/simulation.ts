@@ -313,3 +313,71 @@ export interface ParameterEstimationResult {
     residual: number;
   }>;
 }
+
+export type StateTransitionType =
+  | 'parameter_snapshot'
+  | 'outbreak_seeding'
+  | 'peak_incidence'
+  | 'peak_daily_infections'
+  | 're_inflection_subcritical'
+  | 're_inflection_supercritical'
+  | 'capacity_breach'
+  | 'capacity_restored'
+  | 'icu_capacity_breach'
+  | 'icu_capacity_restored'
+  | 'npi_triggered'
+  | 'npi_ended'
+  | 'vaccination_launch'
+  | 'vaccination_milestone'
+  | 'variant_emergence'
+  | 'variant_dominance'
+  | 'epidemic_exhaustion';
+
+export interface StateTransitionEvent {
+  id: string;
+  day: number;
+  type: StateTransitionType;
+  category: 'epidemic' | 'healthcare' | 'intervention' | 'variant';
+  title: string;
+  description: string;
+  severity: 'normal' | 'warning' | 'critical' | 'info';
+  metricValue?: number | string;
+  strainId?: string;
+  interventionId?: string;
+}
+
+export interface SimulationEventLogEntry {
+  id: string;
+  timestamp: string; // ISO 8601 string
+  label: string; // Display title, e.g. "Scenario Baseline (RK45)"
+  solver: string;
+  mode: string;
+  config: SimulationConfig; // Snapshot of exact simulation parameters
+  parametersSummary: {
+    population: number;
+    solver: string;
+    timeStep: number;
+    horizonDays: number;
+    strainsCount: number;
+    primaryBeta: number;
+    primaryGamma: number;
+    primarySigma: number;
+    primaryMu: number;
+    primaryR0: number;
+    activeInterventionsCount: number;
+    vaccinationEnabled: boolean;
+    hospitalCapacityEnabled: boolean;
+  };
+  outcomesSummary: {
+    totalInfected: number;
+    peakActive: number;
+    peakDay: number;
+    attackRate: number;
+    totalDeaths: number;
+    maxRe: number;
+    finalRe: number;
+    hospitalOverloadDays: number;
+  };
+  transitions: StateTransitionEvent[];
+}
+
