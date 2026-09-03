@@ -1,14 +1,27 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import dotenv from 'dotenv';
-import { createServer as createViteServer } from 'vite';
 import { handleApiRoute } from './src/api/routes';
 
 dotenv.config();
 
 async function startServer() {
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    (typeof __filename !== 'undefined' && __filename.endsWith('.cjs'));
+
+  if (isProduction) {
+    process.env.NODE_ENV = 'production';
+  }
+
   const app = express();
-  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  // PORT resolution:
+  // In the development container, DEFAULT_APP_PORT is 3000 while NGINX listens on 8080.
+  // In Cloud Run deployment, Cloud Run injects PORT (e.g. 3000 or 8080) directly into the environment.
+  const PORT = process.env.DEFAULT_APP_PORT
+    ? parseInt(process.env.DEFAULT_APP_PORT, 10)
+    : (process.env.PORT ? parseInt(process.env.PORT, 10) : 3000);
 
   app.use(express.json({ limit: '20mb' }));
   app.use(express.urlencoded({ extended: true, limit: '20mb' }));
@@ -34,7 +47,8 @@ async function startServer() {
   });
 
   // Vite middleware for development vs static dist for production
-  if (process.env.NODE_ENV !== 'production') {
+  if (!isProduction) {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
@@ -42,14 +56,30 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+    }
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      const indexPath = path.join(distPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).send('Application build not found. Please run npm run build.');
+      }
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`ViraLab full-stack server running on port ${PORT}`);
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`ViraLab server running on port ${PORT} (mode: ${isProduction ? 'production' : 'development'})`);
+  });
+
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`[ViraLab Server] Notice: Port ${PORT} is already in use by an existing server instance. Serving via existing active process.`);
+    } else {
+      console.error('[ViraLab Server] Unhandled server error:', err);
+      process.exit(1);
+    }
   });
 }
 
