@@ -29,7 +29,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLoadPres
     <div id="viralab-landing-page" className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-b from-slate-50 via-blue-50/20 to-white dark:from-slate-950 dark:via-blue-950/10 dark:to-slate-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800 mb-6">
             <Activity className="w-3.5 h-3.5 animate-spin" />
             <span>Interactive Viral Transmission, Evolution & Outbreak Simulation Platform</span>
@@ -86,7 +86,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLoadPres
 
       {/* Preset Showcase */}
       <section className="py-12 bg-slate-50/60 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -181,7 +181,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLoadPres
 
       {/* Architecture & Modules Grid */}
       <section className="py-16 bg-white dark:bg-slate-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
               Core Scientific Modules

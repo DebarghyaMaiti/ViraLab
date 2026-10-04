@@ -170,7 +170,7 @@ export const ComparativeLogsViewer: React.FC<ComparativeLogsViewerProps> = ({
   const baselineLog = logs[0];
 
   return (
-    <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-900/60 shadow-xs space-y-6">
+    <div className="w-full max-w-full min-w-0 p-4 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-900/60 shadow-xs space-y-6 overflow-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
         <div>
@@ -246,7 +246,7 @@ export const ComparativeLogsViewer: React.FC<ComparativeLogsViewerProps> = ({
       {/* Chart Section */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
             <button
               type="button"
               onClick={() => setMetric('active')}
@@ -309,9 +309,9 @@ export const ComparativeLogsViewer: React.FC<ComparativeLogsViewerProps> = ({
           </div>
         </div>
 
-        <div className="h-80 w-full pt-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
+        <div className="h-80 w-full min-w-0 max-w-full overflow-hidden pt-2">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
+            <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
               <XAxis
                 dataKey="day"
@@ -350,7 +350,7 @@ export const ComparativeLogsViewer: React.FC<ComparativeLogsViewerProps> = ({
 
       {/* Side-by-Side Parameter Impact & Outcome Matrix */}
       <div className="space-y-3 pt-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
           <div className="flex items-center gap-2">
             <Sliders className="w-4 h-4 text-indigo-600" />
             <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -362,13 +362,13 @@ export const ComparativeLogsViewer: React.FC<ComparativeLogsViewerProps> = ({
           </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto w-full min-w-0 max-w-full scrollbar-thin">
+          <table className="w-full text-left text-xs border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden min-w-[500px]">
             <thead>
               <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-700">
-                <th className="py-2.5 px-3 w-48 shrink-0">Parameter / Outcome</th>
+                <th className="py-2.5 px-3 w-44 sm:w-48 shrink-0">Parameter / Outcome</th>
                 {resolvedLogsWithData.map((log, idx) => (
-                  <th key={log.id} className="py-2.5 px-3 min-w-[200px]">
+                  <th key={log.id} className="py-2.5 px-3 min-w-[140px] sm:min-w-[170px]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <span

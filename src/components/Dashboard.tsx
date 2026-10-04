@@ -52,7 +52,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ results, onNavigateToTab, 
 
   if (!results) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <div className="max-w-md mx-auto p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <Activity className="w-12 h-12 text-blue-500 mx-auto mb-4 animate-pulse" />
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">No Simulation Executed</h2>
@@ -98,7 +98,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ results, onNavigateToTab, 
   };
 
   return (
-    <div id="viralab-dashboard" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div id="viralab-dashboard" className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 min-w-0">
       {/* Top Disclaimer */}
       <DisclaimerBanner compact />
 
@@ -129,7 +129,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ results, onNavigateToTab, 
 
       {/* 1. Master KPI Cards Grid */}
       <section id="kpi-cards-grid">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
           {/* Card 1: Total Population */}
           <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
@@ -339,8 +339,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ results, onNavigateToTab, 
             </div>
           </div>
 
-          <div className="h-72 sm:h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-72 sm:h-80 w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
               <LineChart data={timeSeries} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                 <XAxis dataKey="day" tick={{ fontSize: 11 }} label={{ value: 'Simulation Day', position: 'insideBottom', offset: -2, fontSize: 11 }} />
@@ -451,8 +451,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ results, onNavigateToTab, 
               </p>
             </div>
 
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-64 w-full min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                 <LineChart data={timeSeries} margin={{ top: 10, right: 15, left: 5, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                   <XAxis dataKey="day" tick={{ fontSize: 11 }} />
@@ -488,8 +488,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ results, onNavigateToTab, 
               </button>
             </div>
 
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-64 w-full min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                 <AreaChart
                   data={timeSeries.map((pt) => {
                     const row: any = { day: pt.day };
@@ -549,8 +549,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ results, onNavigateToTab, 
               </div>
             </div>
 
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-64 w-full min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                 <LineChart data={timeSeries} margin={{ top: 10, right: 15, left: 5, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                   <XAxis dataKey="day" tick={{ fontSize: 11 }} />

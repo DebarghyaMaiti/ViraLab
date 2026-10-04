@@ -23,7 +23,7 @@ export const EducationalMode: React.FC = () => {
   const hit = r0 > 1 ? Number(((1 - 1 / r0) * 100).toFixed(1)) : 0;
 
   return (
-    <div id="educational-mode" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div id="educational-mode" className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 min-w-0">
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">

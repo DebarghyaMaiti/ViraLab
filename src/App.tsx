@@ -185,7 +185,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors antialiased">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors antialiased">
       {/* Top Navbar */}
       <Navbar
         activeTab={activeTab}
@@ -202,7 +202,7 @@ function AppContent() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full min-w-0 overflow-x-hidden">
         {activeTab === 'landing' && (
           <LandingPage
             onNavigate={(tab) => setActiveTab(tab)}

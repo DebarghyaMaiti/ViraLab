@@ -149,7 +149,7 @@ export const EventLoggingPanel: React.FC<EventLoggingPanelProps> = ({
   return (
     <section
       id="simulation-event-logger"
-      className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-5"
+      className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-5 w-full min-w-0 max-w-full overflow-hidden"
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -450,7 +450,7 @@ export const EventLoggingPanel: React.FC<EventLoggingPanelProps> = ({
                   </div>
 
                   {/* Parameter Snapshot Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-3">
                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800">
                       <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
                         Transmission (β)

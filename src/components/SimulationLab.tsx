@@ -57,7 +57,7 @@ export const SimulationLab: React.FC<SimulationLabProps> = ({
   };
 
   return (
-    <div id="simulation-lab" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div id="simulation-lab" className="w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 min-w-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -175,7 +175,7 @@ export const SimulationLab: React.FC<SimulationLabProps> = ({
               </h3>
               <span className="text-[11px] text-slate-500 dark:text-slate-400">Click to instantly load</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5">
               {scenarioPresets.map((preset) => (
                 <button
                   key={preset.id}
@@ -194,7 +194,7 @@ export const SimulationLab: React.FC<SimulationLabProps> = ({
           </section>
 
       {/* Main Parameters Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
         {/* Column 1: Population & Horizon */}
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">

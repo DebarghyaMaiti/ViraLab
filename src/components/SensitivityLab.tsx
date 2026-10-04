@@ -976,8 +976,8 @@ export const SensitivityLab: React.FC<SensitivityLabProps> = ({
                   ))}
                 </div>
 
-                <div className="h-80 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
+                <div className="h-80 w-full min-w-0 max-w-full overflow-hidden">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                     <LineChart data={trajectoryChartData}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                       <XAxis
@@ -1036,8 +1036,8 @@ export const SensitivityLab: React.FC<SensitivityLabProps> = ({
                   .
                 </div>
 
-                <div className="h-80 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
+                <div className="h-80 w-full min-w-0 max-w-full overflow-hidden">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                     <LineChart data={responseChartData}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                       <XAxis
@@ -1079,8 +1079,8 @@ export const SensitivityLab: React.FC<SensitivityLabProps> = ({
 
             {/* TAB 3: Sensitivity Matrix Table */}
             {activeResultsTab === 'matrix' && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+              <div className="overflow-x-auto w-full min-w-0 max-w-full scrollbar-thin">
+                <table className="w-full text-left text-xs min-w-[720px]">
                   <thead>
                     <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                       <th className="py-2.5 px-3">Run</th>
