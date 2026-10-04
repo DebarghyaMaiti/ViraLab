@@ -389,6 +389,8 @@ export function createEventLogEntry(
       hospitalOverloadDays: results.kpis.hospitalOverloadDays || 0,
     },
     transitions,
+    results,
+    timeSeries: results.timeSeries,
   };
 }
 

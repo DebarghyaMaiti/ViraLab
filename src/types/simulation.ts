@@ -379,5 +379,7 @@ export interface SimulationEventLogEntry {
     hospitalOverloadDays: number;
   };
   transitions: StateTransitionEvent[];
+  results?: SimulationResults;
+  timeSeries?: SimulationTimePoint[];
 }
 

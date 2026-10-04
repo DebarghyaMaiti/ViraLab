@@ -18,7 +18,11 @@ import {
   RotateCcw,
   FlaskConical,
   LineChart,
+  LogIn,
+  LogOut,
+  User as UserIcon,
 } from 'lucide-react';
+import { useAuth } from '../firebase/authContext';
 
 export type ActiveTab =
   | 'landing'
@@ -60,6 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onResetToDefaults,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, signInWithGoogle, signOutUser } = useAuth();
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -181,6 +186,41 @@ export const Navbar: React.FC<NavbarProps> = ({
               <HelpCircle className="w-3.5 h-3.5" />
               <span>{isLearningMode ? 'Learn Mode: On' : 'Learn Mode'}</span>
             </button>
+
+            {/* Google Sign-in / User Account */}
+            {user ? (
+              <div className="flex items-center gap-1.5 pl-1">
+                <div
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200"
+                  title={`Signed in as ${user.email} (Firestore sync active)`}
+                >
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt="" className="w-4 h-4 rounded-full object-cover" />
+                  ) : (
+                    <UserIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  )}
+                  <span className="hidden md:inline font-semibold max-w-[90px] truncate text-[11px]">
+                    {user.displayName || user.email?.split('@')[0]}
+                  </span>
+                </div>
+                <button
+                  onClick={signOutUser}
+                  title="Sign Out"
+                  className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={signInWithGoogle}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
+                title="Sign in with Google to sync simulations to Firestore"
+              >
+                <LogIn className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <span className="hidden sm:inline">Sign In</span>
+              </button>
+            )}
 
             {/* Theme Toggle */}
             <button

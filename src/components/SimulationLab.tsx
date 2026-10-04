@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Sliders,
   Play,
@@ -9,11 +9,14 @@ import {
   Cpu,
   Layers,
   Sparkles,
+  TrendingUp,
+  ArrowRight,
 } from 'lucide-react';
 import { SimulationConfig, SimulationEventLogEntry } from '../types/simulation';
 import { scenarioPresets } from '../data/presets';
 import { validateSimulationConfig } from '../engine/validation';
 import { EventLoggingPanel } from './EventLoggingPanel';
+import { SensitivityLab } from './SensitivityLab';
 
 interface SimulationLabProps {
   config: SimulationConfig;
@@ -46,6 +49,7 @@ export const SimulationLab: React.FC<SimulationLabProps> = ({
   onDeleteLog = () => {},
   onClearLogs = () => {},
 }) => {
+  const [activeLabTab, setActiveLabTab] = useState<'config' | 'sensitivity'>('config');
   const validation = validateSimulationConfig(config);
 
   const updateConfig = (partial: Partial<SimulationConfig>) => {
@@ -62,48 +66,132 @@ export const SimulationLab: React.FC<SimulationLabProps> = ({
             <span>Simulation Lab & ODE Solver Configuration</span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Configure population scales, numerical integration solvers, duration, and stochastic ensemble properties.
+            Configure population scales, numerical integration solvers, duration, and queue sequential sensitivity analyses.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={onRunSimulation}
-            disabled={isSimulating || !validation.valid}
-            className="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
-          >
-            <Play className={`w-3.5 h-3.5 fill-current ${isSimulating ? 'animate-spin' : ''}`} />
-            <span>{isSimulating ? 'Computing Numerical Solution...' : 'Execute Simulation'}</span>
-          </button>
+          {activeLabTab === 'config' ? (
+            <button
+              onClick={onRunSimulation}
+              disabled={isSimulating || !validation.valid}
+              className="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+            >
+              <Play className={`w-3.5 h-3.5 fill-current ${isSimulating ? 'animate-spin' : ''}`} />
+              <span>{isSimulating ? 'Computing Numerical Solution...' : 'Execute Baseline Simulation'}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setActiveLabTab('config')}
+              className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 border border-slate-200 dark:border-slate-700 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Back to ODE Parameters</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Preset Selector Banner */}
-      <section className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-purple-600" />
-            <span>Calibrated Scenario Presets</span>
-          </h3>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">Click to instantly load</span>
+      {/* Top Segmented Tab Switch */}
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl">
+          <button
+            type="button"
+            onClick={() => setActiveLabTab('config')}
+            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+              activeLabTab === 'config'
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            <span>Model Parameters & Solvers</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveLabTab('sensitivity')}
+            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+              activeLabTab === 'sensitivity'
+                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>Sensitivity Analysis & Batch Queue</span>
+          </button>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-          {scenarioPresets.map((preset) => (
-            <button
-              key={preset.id}
-              onClick={() => onLoadPreset(preset.id)}
-              className="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-all cursor-pointer group"
-            >
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1">
-                {preset.badge}
-              </span>
-              <div className="font-bold text-xs text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
-                {preset.name}
+
+        <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500">
+          <span>Active Mode:</span>
+          <span className="font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px]">
+            {activeLabTab === 'config' ? 'Single Run Configuration' : 'Sequential Parameter Sweeps'}
+          </span>
+        </div>
+      </div>
+
+      {activeLabTab === 'sensitivity' ? (
+        <SensitivityLab
+          baseConfig={config}
+          onApplyConfigToMain={(newCfg) => {
+            onChangeConfig(newCfg);
+            onRunSimulation();
+            setActiveLabTab('config');
+          }}
+          isLearningMode={isLearningMode}
+        />
+      ) : (
+        <>
+          {/* Sensitivity Callout Banner */}
+          <div className="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600/10 dark:bg-indigo-400/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                <TrendingUp className="w-5 h-5" />
               </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                  Want to evaluate parameter sensitivity across a range?
+                </h4>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Queue multi-run sweeps to test transmission rate (β), intervention compliance, and vaccination coverage in sequence.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveLabTab('sensitivity')}
+              className="px-4 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+            >
+              <span>Open Sensitivity Queue</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
-          ))}
-        </div>
-      </section>
+          </div>
+
+          {/* Preset Selector Banner */}
+          <section className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+                <span>Calibrated Scenario Presets</span>
+              </h3>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">Click to instantly load</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+              {scenarioPresets.map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => onLoadPreset(preset.id)}
+                  className="p-3 text-left rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-all cursor-pointer group"
+                >
+                  <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1">
+                    {preset.badge}
+                  </span>
+                  <div className="font-bold text-xs text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                    {preset.name}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
 
       {/* Main Parameters Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -359,6 +447,8 @@ export const SimulationLab: React.FC<SimulationLabProps> = ({
         onDeleteLog={onDeleteLog}
         onClearLogs={onClearLogs}
       />
+        </>
+      )}
     </div>
   );
 };

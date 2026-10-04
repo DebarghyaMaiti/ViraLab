@@ -20,8 +20,15 @@ import { normalizeDatasetRows } from './data/dataQuality';
 import { runDeterministicSimulation } from './engine/rk45';
 import { runStochasticSimulation } from './engine/stochastic';
 import { createEventLogEntry } from './engine/eventLogger';
+import { AuthProvider, useAuth } from './firebase/authContext';
+import {
+  saveSimulationLogToCloud,
+  loadSimulationLogsFromCloud,
+  deleteSimulationLogFromCloud,
+} from './firebase/firestoreService';
 
-export default function App() {
+function AppContent() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [isLearningMode, setIsLearningMode] = useState<boolean>(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -101,6 +108,9 @@ export default function App() {
         const newLogEntry = createEventLogEntry(cfgToRun, simData);
         setEventLogs((prev) => [newLogEntry, ...prev.slice(0, 49)]);
         setSelectedLogId(newLogEntry.id);
+        if (user) {
+          saveSimulationLogToCloud(user.uid, newLogEntry);
+        }
       } catch {
         const fallback =
           cfgToRun.mode === 'stochastic'
@@ -111,12 +121,30 @@ export default function App() {
         const newLogEntry = createEventLogEntry(cfgToRun, fallback);
         setEventLogs((prev) => [newLogEntry, ...prev.slice(0, 49)]);
         setSelectedLogId(newLogEntry.id);
+        if (user) {
+          saveSimulationLogToCloud(user.uid, newLogEntry);
+        }
       } finally {
         setIsSimulating(false);
       }
     },
-    [config]
+    [config, user]
   );
+
+  // Synchronize cloud logs whenever user signs in
+  useEffect(() => {
+    if (user) {
+      loadSimulationLogsFromCloud(user.uid).then((cloudLogs) => {
+        if (cloudLogs && cloudLogs.length > 0) {
+          setEventLogs((prev) => {
+            const existingIds = new Set(prev.map((l) => l.id));
+            const fresh = cloudLogs.filter((l) => !existingIds.has(l.id));
+            return [...fresh, ...prev];
+          });
+        }
+      });
+    }
+  }, [user]);
 
   // Auto-run baseline simulation and initialize synthetic historical outbreak data on mount
   useEffect(() => {
@@ -213,6 +241,9 @@ export default function App() {
               setEventLogs((prev) => prev.filter((l) => l.id !== id));
               if (selectedLogId === id) {
                 setSelectedLogId(null);
+              }
+              if (user) {
+                deleteSimulationLogFromCloud(user.uid, id);
               }
             }}
             onClearLogs={() => {
@@ -319,3 +350,12 @@ export default function App() {
     </div>
   );
 }
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+

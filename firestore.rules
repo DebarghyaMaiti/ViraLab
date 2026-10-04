@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(docId) {
+      return docId is string &&
+             docId.size() > 0 &&
+             docId.size() <= 128 &&
+             docId.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User Profile Document
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // Disallow querying all users
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       request.resource.data.id == userId;
+      allow update: if isOwner(userId) &&
+                       request.resource.data.id == userId;
+      allow delete: if false;
+
+      // Saved Simulation Configurations Subcollection
+      match /saved_simulations/{simulationId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(simulationId) &&
+                         request.resource.data.userId == userId &&
+                         request.resource.data.name is string &&
+                         request.resource.data.name.size() > 0 &&
+                         request.resource.data.name.size() <= 200;
+        allow update: if isOwner(userId) &&
+                         isValidId(simulationId) &&
+                         request.resource.data.userId == userId;
+        allow delete: if isOwner(userId) &&
+                         isValidId(simulationId);
+      }
+
+      // Simulation Event Logs Subcollection
+      match /simulation_logs/{logId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(logId) &&
+                         request.resource.data.userId == userId &&
+                         request.resource.data.label is string &&
+                         request.resource.data.label.size() <= 250;
+        allow delete: if isOwner(userId) &&
+                         isValidId(logId);
+      }
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

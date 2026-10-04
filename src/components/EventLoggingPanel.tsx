@@ -23,6 +23,8 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  Layers,
+  GitCompare,
 } from 'lucide-react';
 import {
   SimulationConfig,
@@ -30,6 +32,7 @@ import {
   StateTransitionEvent,
 } from '../types/simulation';
 import { exportEventLogsAsJson, exportEventLogsAsCsv } from '../engine/eventLogger';
+import { ComparativeLogsViewer } from './ComparativeLogsViewer';
 
 interface EventLoggingPanelProps {
   eventLogs: SimulationEventLogEntry[];
@@ -55,8 +58,37 @@ export const EventLoggingPanel: React.FC<EventLoggingPanelProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isExpanded, setIsExpanded] = useState(true);
 
+  // Multi-selection state for comparative analysis
+  const [selectedComparisonIds, setSelectedComparisonIds] = useState<string[]>(() => {
+    if (eventLogs.length >= 2) {
+      return [eventLogs[0].id, eventLogs[1].id];
+    }
+    return eventLogs.length === 1 ? [eventLogs[0].id] : [];
+  });
+  const [viewMode, setViewMode] = useState<'single' | 'comparison'>('single');
+
+  const toggleComparisonLog = (logId: string) => {
+    setSelectedComparisonIds((prev) => {
+      if (prev.includes(logId)) {
+        return prev.filter((id) => id !== logId);
+      } else {
+        return [...prev, logId];
+      }
+    });
+  };
+
+  const handleSelectAllComparison = () => {
+    setSelectedComparisonIds(eventLogs.map((l) => l.id));
+  };
+
+  const handleClearComparison = () => {
+    setSelectedComparisonIds([]);
+  };
+
   const activeLog =
     eventLogs.find((l) => l.id === selectedLogId) || eventLogs[0] || null;
+
+  const comparisonLogs = eventLogs.filter((l) => selectedComparisonIds.includes(l.id));
 
   const handleCopy = (log: SimulationEventLogEntry) => {
     navigator.clipboard.writeText(JSON.stringify(log, null, 2));
@@ -198,10 +230,62 @@ export const EventLoggingPanel: React.FC<EventLoggingPanelProps> = ({
             </div>
           ) : (
             <div className="space-y-5">
-              {/* Run Selector Tabs */}
+              {/* Mode Switcher & Multi-Select Action Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-xl">
+                <div className="flex items-center gap-1.5 p-1 bg-slate-200/70 dark:bg-slate-900 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('single')}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      viewMode === 'single'
+                        ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <History className="w-3.5 h-3.5" />
+                    <span>Single Run Inspector</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('comparison')}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+                      viewMode === 'comparison'
+                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>Side-by-Side Comparison ({selectedComparisonIds.length})</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-slate-500 text-[11px]">
+                    Check logs to compare:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleSelectAllComparison}
+                    className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  >
+                    Select All
+                  </button>
+                  <span className="text-slate-300 dark:text-slate-700">·</span>
+                  <button
+                    type="button"
+                    onClick={handleClearComparison}
+                    className="text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              {/* Run Selector Tabs with Multi-select Checkboxes */}
               <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
                 {eventLogs.map((log) => {
-                  const isSelected = activeLog?.id === log.id;
+                  const isSelected = activeLog?.id === log.id && viewMode === 'single';
+                  const isCheckedForComparison = selectedComparisonIds.includes(log.id);
                   const dateObj = new Date(log.timestamp);
                   const timeStr = dateObj.toLocaleTimeString([], {
                     hour: '2-digit',
@@ -210,38 +294,95 @@ export const EventLoggingPanel: React.FC<EventLoggingPanelProps> = ({
                   });
 
                   return (
-                    <button
+                    <div
                       key={log.id}
-                      onClick={() => onSelectLog(log.id)}
-                      className={`px-3.5 py-2 rounded-xl text-left transition-all shrink-0 cursor-pointer border ${
+                      className={`px-3 py-2 rounded-xl text-left transition-all shrink-0 cursor-pointer border flex items-center gap-2.5 ${
                         isSelected
                           ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 dark:border-blue-500 shadow-2xs'
+                          : isCheckedForComparison
+                          ? 'bg-indigo-50/40 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-800'
                           : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
+                      onClick={() => {
+                        onSelectLog(log.id);
+                        if (viewMode === 'comparison' && !isCheckedForComparison) {
+                          toggleComparisonLog(log.id);
+                        }
+                      }}
                     >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`w-2 h-2 rounded-full ${
-                            isSelected ? 'bg-blue-600 dark:bg-blue-400' : 'bg-slate-300 dark:bg-slate-600'
-                          }`}
-                        />
-                        <span className="font-bold text-xs text-slate-900 dark:text-white truncate max-w-[150px]">
-                          {log.label}
-                        </span>
+                      <input
+                        type="checkbox"
+                        checked={isCheckedForComparison}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          toggleComparisonLog(log.id);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        title="Check to include in side-by-side comparison"
+                        className="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer shrink-0"
+                      />
+
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              isSelected
+                                ? 'bg-blue-600 dark:bg-blue-400'
+                                : isCheckedForComparison
+                                ? 'bg-indigo-500'
+                                : 'bg-slate-300 dark:bg-slate-600'
+                            }`}
+                          />
+                          <span className="font-bold text-xs text-slate-900 dark:text-white truncate max-w-[150px]">
+                            {log.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
+                          <span>{timeStr}</span>
+                          <span>•</span>
+                          <span>R₀ {log.parametersSummary.primaryR0}</span>
+                          <span>•</span>
+                          <span>{log.parametersSummary.solver}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-500 dark:text-slate-400">
-                        <span>{timeStr}</span>
-                        <span>•</span>
-                        <span>{log.transitions.length} events</span>
-                        <span>•</span>
-                        <span>R₀ {log.parametersSummary.primaryR0}</span>
-                      </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
 
-              {activeLog && (
+              {/* View Mode: Comparison */}
+              {viewMode === 'comparison' && (
+                <div className="space-y-4">
+                  {comparisonLogs.length < 2 ? (
+                    <div className="p-8 text-center rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-dashed border-indigo-200 dark:border-indigo-900/50 space-y-3">
+                      <Layers className="w-8 h-8 text-indigo-500 mx-auto" />
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                        Select at least 2 simulation logs to compare
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                        Use the checkboxes on the run tabs above to choose multiple simulation snapshots. Their epidemiological trajectories, parameter differences, and outcome metrics will be charted side-by-side.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleSelectAllComparison}
+                        className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors cursor-pointer"
+                      >
+                        Select All {eventLogs.length} Logged Runs
+                      </button>
+                    </div>
+                  ) : (
+                    <ComparativeLogsViewer
+                      logs={comparisonLogs}
+                      onRemoveLog={(id) => toggleComparisonLog(id)}
+                      onRestoreConfig={onRestoreConfig}
+                      onClose={() => setViewMode('single')}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* View Mode: Single Run Inspection */}
+              {viewMode === 'single' && activeLog && (
                 <div className="space-y-5">
                   {/* Selected Run Action Bar */}
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
